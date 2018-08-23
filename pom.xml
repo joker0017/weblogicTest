@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.chen7</groupId>
+  <artifactId>weblogicTest</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <name>weblogicTest Maven Webapp</name>
+  <!-- FIXME change it to the project's website -->
+
+  <url>http://www.example.com</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-web-api</artifactId>
+      <version>6.0</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <finalName>weblogicTest</finalName>
+    <plugins>
+      <plugin>
+        <!-- This is the configuration for the
+             weblogic-maven-plugin
+        -->
+        <groupId>com.oracle.weblogic</groupId>
+        <artifactId>weblogic-maven-plugin</artifactId>
+        <version>12.2.1-3-0</version>
+        <configuration>
+          <middlewareHome>D:\Weblogic\wls12213</middlewareHome>
+          <domainHome>${project.build.directory}/base_domain</domainHome>
+          <user>weblogic</user>
+          <password>chen70017</password>
+          <source>${basedir}/target/${project.artifactId}.war</source>
+          <targets>AdminServer</targets>
+          <verbose>true</verbose>
+          <name>${project.build.finalName}</name>
+        </configuration>
+        <executions>
+          <execution>
+            <id>wls-create-domain</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>create-domain</goal>
+            </goals>
+          </execution>
+          <!-- Execute the appc goal during the package phase -->
+          <execution>
+            <id>wls-appc</id>
+            <phase>package</phase>
+            <goals>
+              <goal>appc</goal>
+            </goals>
+          </execution>
+          <!-- Deploy the application to the WebLogic Server in the
+               pre-integration-test phase
+          -->
+          <execution>
+            <id>wls-deploy</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>deploy</goal>
+            </goals>
+          </execution>
+
+          <!-- Stop the application in the pre-integration-test phase -->
+          <execution>
+            <id>wls-stop-app</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>stop-app</goal>
+            </goals>
+            <configuration>
+              <adminurl>t3://127.0.0.1:7001</adminurl>
+              <user>weblogic</user>
+              <password>password</password>
+              <name>${project.build.finalName}</name>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- jerebel maven 插件，用于生成jrebel.xml -->
+      <plugin>
+        <groupId>org.zeroturnaround</groupId>
+        <artifactId>jrebel-maven-plugin</artifactId>
+        <version>1.1.5</version>
+        <executions>
+          <execution>
+            <id>generate-rebel-xml</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <rebelXmlDirectory>${basedir}/src/main/webapp/WEB-INF/classes</rebelXmlDirectory>
+          <!-- 指定生成的jrebel.xml放在哪里， 要求放在web应用的 classpath下 -->
+        </configuration>
+      </plugin>
+    </plugins>
+    <outputDirectory>${basedir}/src/main/webapp/WEB-INF/classes</outputDirectory>
+    <!-- 指定编译后文件的存放路径，因为jetty默认src/main/webapp为 web应用的根目录而 maven compile 目标后的默认classpath 在target文件夹下，就造成jrebel.xml无法兼顾 jetty
+        默认的是webapp中的classes为 web 应用的根目录， 而maven 默认是target 目录所以需要修改该maven的默认classes目录。 -->
+  </build>
+</project>
